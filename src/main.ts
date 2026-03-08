@@ -5,8 +5,11 @@ import { InputParser } from "./lib/input-parser";
 import { OfferFactory } from "./lib/offer-factory";
 import { OFFERS } from "./constants/offers";
 import { PackageInput } from "./types";
+import { displayResultsTable, printInstructions } from "./lib/utils";
 
 async function main() {
+	printInstructions();
+
 	const rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout,
@@ -18,7 +21,10 @@ async function main() {
 		if (line.trim()) lines.push(line.trim());
 	}
 
-	if (lines.length === 0) return;
+	if (lines.length === 0) {
+		console.warn("No input was provided. Please see the above instructions and try again.");
+		return;
+	}
 
 	try {
 		const { baseCost, packageCount } = InputParser.parseConfig(lines[0]);
@@ -32,9 +38,12 @@ async function main() {
 		const pricingService = new PricingService(costCalculator, offers);
 		const results = pricingService.processPackages(baseCost, packageInputs);
 
-		results.forEach((res) => {
-			console.log(`${res.packageId} ${res.discount} ${res.totalCost}`);
-		});
+		displayResultsTable(results);
+
+		// console.log('\nRaw Output (for legacy/automated processing):');
+		// results.forEach((res) => {
+		// 	console.log(`${res.packageId} ${res.discount} ${res.totalCost}`);
+		// });
 	} catch (error) {
 		if (error instanceof Error) {
 			console.error(`Error: ${error.message}`);
