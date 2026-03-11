@@ -1,7 +1,7 @@
-import { PackageInput } from "../types";
+import { PackageInput, vehiclesConfig } from "../types";
 
 export class InputParser {
-	static parseConfig(line: string): { baseCost: number; packageCount: number } {
+	static parseDeliveryConfig(line: string): { baseCost: number; packageCount: number } {
 		const parts = line.trim().split(/\s+/);
 		if (parts.length < 2) {
 			throw new Error("Invalid config format. Expected: <base_delivery_cost> <no_of_packages>");
@@ -33,5 +33,22 @@ export class InputParser {
 		}
 
 		return { id, weight, distance, offerCode };
+	}
+
+	static parseVehiclesConfig(line: string): vehiclesConfig {
+		const parts = line.trim().split(/\s+/);
+		if (parts.length < 3) {
+			throw new Error(`Invalid vehicles format: ${line}. Expected: <no_of_vehicles> <max_speed> <max_carriage_weight>`);
+		}
+
+		const noOfVehicles = parseInt(parts[0], 10);
+		const maxSpeed = parseFloat(parts[1]);
+		const maxCarriageWeight = parseFloat(parts[2]);
+
+		if (isNaN(noOfVehicles) || isNaN(maxSpeed) || isNaN(maxCarriageWeight)) {
+			throw new Error("Invalid values for vehicles configuration.");
+		}
+
+		return { noOfVehicles, maxSpeed, maxCarriageWeight };
 	}
 }

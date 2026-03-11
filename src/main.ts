@@ -1,6 +1,7 @@
 import * as readline from "readline";
 import { CostCalculator } from "./lib/cost-calculator";
 import { PricingService } from "./services/pricing-service";
+import { DeliveryTimeEstimationService } from "./services/delivery-time-estimation-service";
 import { InputParser } from "./lib/input-parser";
 import { OfferFactory } from "./lib/offer-factory";
 import { OFFERS } from "./constants/offers";
@@ -27,23 +28,26 @@ async function main() {
 	}
 
 	try {
-		const { baseCost, packageCount } = InputParser.parseConfig(lines[0]);
+		const { baseCost, packageCount } = InputParser.parseDeliveryConfig(lines[0]);
 		const packageLines = lines.slice(1, packageCount + 1);
 		const packageInputs: PackageInput[] = packageLines.map((line) =>
 			InputParser.parsePackage(line)
 		);
 
+		let vehiclesConfig;
+		if (lines.length > packageCount + 1) {
+			vehiclesConfig = InputParser.parseVehiclesConfig(lines[packageCount + 1]);
+		}
+
 		const offers = OfferFactory.createMany(OFFERS);
 		const costCalculator = new CostCalculator();
 		const pricingService = new PricingService(costCalculator, offers);
-		const results = pricingService.processPackages(baseCost, packageInputs);
+		const timeEstimationService = new DeliveryTimeEstimationService(pricingService);
+		
+		const results = timeEstimationService.processPackages(baseCost, packageInputs, vehiclesConfig);
 
 		displayResultsTable(results);
 
-		// console.log('\nRaw Output (for legacy/automated processing):');
-		// results.forEach((res) => {
-		// 	console.log(`${res.packageId} ${res.discount} ${res.totalCost}`);
-		// });
 	} catch (error) {
 		if (error instanceof Error) {
 			console.error(`Error: ${error.message}`);

@@ -27,3 +27,13 @@ export interface PricingResult {
 	discount: number;
 	totalCost: number;
 }
+
+export interface vehiclesConfig {
+	noOfVehicles: number;
+	maxSpeed: number;
+	maxCarriageWeight: number;
+}
+
+export interface DeliveryResult extends PricingResult {
+	estimatedDeliveryTime?: number;
+}
